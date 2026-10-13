@@ -51,7 +51,12 @@
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-SDK_FRAMEWORKS="/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/System/Library/Frameworks"
+SDK_PATH="$(xcrun --sdk macosx --show-sdk-path 2>/dev/null || true)"
+if [ -z "$SDK_PATH" ] || [ ! -d "$SDK_PATH/System/Library/Frameworks" ]; then
+  echo "Error: macOS SDK not found via xcrun. Check Xcode/Command Line Tools and xcode-select." >&2
+  exit 1
+fi
+SDK_FRAMEWORKS="$SDK_PATH/System/Library/Frameworks"
 OUTPUT_DIR="$REPO_ROOT/generated"
 STACK_YAML="$REPO_ROOT/stack.yaml"
 MARKER='# Regenerate with: stack exec objc-codegen -- -f AppKit -f WebKit ... -o generated'
